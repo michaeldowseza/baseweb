@@ -19,10 +19,12 @@ import {getOverrides} from '../helpers/overrides.js';
 import getInterpolatedString from '../helpers/i18n-interpolation.js';
 import {LocaleContext} from '../locale/index.js';
 import {StyledInputWrapper} from './styled-components.js';
-import type {DatepickerPropsT} from './types.js';
+import type {DatepickerPropsT, DatepickerDefaultPropsT} from './types.js';
+import DateHelpers from './utils/date-helpers.js';
+import dateFnsAdapter from './utils/date-fns-adapter.js';
 
-export default class Datepicker extends React.Component<
-  DatepickerPropsT,
+export default class Datepicker<T = Date> extends React.Component<
+  DatepickerPropsT<T>,
   {
     calendarFocused: boolean,
     isOpen: boolean,
@@ -32,10 +34,11 @@ export default class Datepicker extends React.Component<
     isInputUsed?: boolean,
   },
 > {
-  static defaultProps = {
+  static defaultProps: DatepickerDefaultPropsT = {
     'aria-describedby': 'datepicker--screenreader--message--input',
     value: null,
     formatString: 'yyyy/MM/dd',
+    adapter: dateFnsAdapter,
   };
 
   calendar: ?HTMLElement;
@@ -48,6 +51,13 @@ export default class Datepicker extends React.Component<
     inputValue: this.formatDisplayValue(this.props.value) || '',
     isInputUsed: false,
   };
+
+  dateHelpers: DateHelpers<T>;
+
+  constructor(props: DatepickerPropsT<T>) {
+    super(props);
+    this.dateHelpers = new DateHelpers(props.adapter);
+  }
 
   onChange = (data: {date: ?Date | Array<Date>}) => {
     const {date} = data;
@@ -66,12 +76,13 @@ export default class Datepicker extends React.Component<
     // The check below refrains from closing the popover if only times changed.
     const onlyTimeChanged = (prev: ?Date, next: ?Date) => {
       if (!prev || !next) return false;
-      const p = formatDate(prev, 'dd-MM-yyyy');
-      const n = formatDate(next, 'dd-MM-yyyy');
+      const p = this.dateHelpers.formatDate(prev, 'dd-MM-yyyy');
+      const n = this.dateHelpers.formatDate(next, 'dd-MM-yyyy');
       if (p === n) {
         return (
-          getHours(prev) !== getHours(next) ||
-          getMinutes(prev) !== getMinutes(next)
+          this.dateHelpers.getHours(prev) !== this.dateHelpers.getHours(next) ||
+          this.dateHelpers.getMinutes(prev) !==
+            this.dateHelpers.getMinutes(next)
         );
       }
       return false;
