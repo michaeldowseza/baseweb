@@ -53,7 +53,7 @@ export default class Datepicker<T = Date> extends React.Component<
     };
   }
 
-  onChange = (data: {date: ?T | Array<T>}) => {
+  onChange: ({date: ?T | Array<T>}) => void = data => {
     const {date} = data;
     let isOpen = false;
     let isPseudoFocused = false;
