@@ -261,7 +261,7 @@ export default class Datepicker<T = Date> extends React.Component<
       ) {
         date = null;
       } else {
-        parseDateString(dateString);
+        date = parseDateString(dateString);
       }
 
       this.dateHelpers.isValid(date) &&
