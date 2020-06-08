@@ -104,7 +104,7 @@ export default class Datepicker<T = Date> extends React.Component<
   formatDate(date: ?T | Array<T>, formatString: string) {
     const format = date => {
       if (formatString === 'yyyy/MM/dd') {
-        return this.dateHelpers.format(date, 'slashDate');
+        return this.dateHelpers.format(date, 'slashDate', this.props.locale);
       }
       return this.dateHelpers.formatDate(date, formatString, this.props.locale);
     };
@@ -205,6 +205,22 @@ export default class Datepicker<T = Date> extends React.Component<
       isInputUsed: true,
     });
 
+    const parseDateString = dateString => {
+      const formatString = this.normalizeDashes(this.props.formatString);
+      if (formatString === 'yyyy/MM/dd') {
+        return this.dateHelpers.parse(
+          dateString,
+          'slashDate',
+          this.props.locale,
+        );
+      }
+      return this.dateHelpers.parseString(
+        dateString,
+        formatString,
+        this.props.locale,
+      );
+    };
+
     if (this.props.range) {
       const [left, right] = this.normalizeDashes(inputValue).split(' – ');
 
@@ -217,10 +233,8 @@ export default class Datepicker<T = Date> extends React.Component<
           left,
           this.normalizeDashes(formatString),
         );
-        endDate = this.dateHelpers.parse(
-          right,
-          this.normalizeDashes(formatString),
-        );
+        startDate = parseDateString(left);
+        endDate = parseDateString(right);
       }
 
       const onChange = this.props.onChange;
@@ -251,13 +265,7 @@ export default class Datepicker<T = Date> extends React.Component<
       ) {
         date = null;
       } else {
-        date = this.dateHelpers.parse(
-          dateString,
-          formatString === 'yyyy/MM/dd'
-            ? this.dateHelpers.adapter.formats.slashDate
-            : formatString,
-          new Date(),
-        );
+        parseDateString(dateString);
       }
 
       this.dateHelpers.isValid(date) &&
